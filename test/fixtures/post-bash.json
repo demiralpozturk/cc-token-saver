@@ -1,0 +1,21 @@
+{
+  "session_id": "{{SESSION}}",
+  "transcript_path": "{{PROJECT}}/transcript.jsonl",
+  "cwd": "{{PROJECT}}",
+  "permission_mode": "default",
+  "hook_event_name": "PostToolUse",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "{{COMMAND}}",
+    "description": "Install dependencies"
+  },
+  "tool_response": {
+    "stdout": "{{STDOUT}}",
+    "stderr": "{{STDERR}}",
+    "interrupted": false,
+    "isImage": false,
+    "noOutputExpected": false
+  },
+  "tool_use_id": "toolu_01POSTBASH",
+  "duration_ms": 41870
+}
