@@ -1,0 +1,14 @@
+{
+  "name": "cc-token-saver",
+  "displayName": "Token Saver",
+  "version": "0.1.0",
+  "description": "Unofficial community plugin: blocks wasteful reads (lockfiles, minified bundles, build output, huge files), stops repeated reads of unchanged files, condenses noisy install/build/test output, and shows session cost plus tokens saved.",
+  "author": {
+    "name": "Demiralp Öztürk",
+    "url": "https://github.com/demiralpozturk"
+  },
+  "homepage": "https://github.com/demiralpozturk/cc-token-saver",
+  "repository": "https://github.com/demiralpozturk/cc-token-saver",
+  "license": "MIT",
+  "keywords": ["tokens", "cost", "hooks", "context", "statusline", "developer-tools"]
+}

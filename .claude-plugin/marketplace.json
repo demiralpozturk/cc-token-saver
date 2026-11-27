@@ -1,0 +1,17 @@
+{
+  "name": "cc-token-saver",
+  "description": "Community marketplace for the cc-token-saver plugin (unofficial, not affiliated with Anthropic).",
+  "owner": {
+    "name": "Demiralp Öztürk",
+    "url": "https://github.com/demiralpozturk"
+  },
+  "plugins": [
+    {
+      "name": "cc-token-saver",
+      "source": "./",
+      "description": "Blocks wasteful reads, stops repeated reads, condenses noisy command output, and shows session cost plus tokens saved.",
+      "category": "productivity",
+      "tags": ["tokens", "cost", "hooks", "statusline"]
+    }
+  ]
+}

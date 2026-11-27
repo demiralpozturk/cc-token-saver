@@ -1,0 +1,32 @@
+{
+  "name": "cc-token-saver",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Unofficial community plugin for Claude Code that measurably reduces token usage and shows session cost.",
+  "license": "MIT",
+  "author": "Demiralp Öztürk (https://github.com/demiralpozturk)",
+  "homepage": "https://github.com/demiralpozturk/cc-token-saver#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/demiralpozturk/cc-token-saver.git"
+  },
+  "bugs": {
+    "url": "https://github.com/demiralpozturk/cc-token-saver/issues"
+  },
+  "keywords": [
+    "claude-code",
+    "claude-code-plugin",
+    "hooks",
+    "tokens",
+    "cost",
+    "statusline",
+    "developer-tools"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test",
+    "check": "node scripts/check-manifests.js"
+  }
+}
