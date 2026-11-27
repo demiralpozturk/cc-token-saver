@@ -1,0 +1,159 @@
+{
+  "meta": "Node v24.13.0, win32 x64, 2026-11-27",
+  "rows": [
+    {
+      "id": "lockfile",
+      "title": "Read package-lock.json (161 KB)",
+      "without": 25000,
+      "withPlugin": 312,
+      "action": "denied",
+      "note": "Claude Code returns the first 25k tokens; follow-up: Grep one package (-A 4)",
+      "ms": 73.2695
+    },
+    {
+      "id": "lockfile-huge",
+      "title": "Read package-lock.json (634 KB)",
+      "without": 110,
+      "withPlugin": 110,
+      "action": "allowed",
+      "note": "Claude Code refuses whole files over 256 KB; follow-up: Grep one package",
+      "ms": 92.577
+    },
+    {
+      "id": "yarn-lock",
+      "title": "Read yarn.lock (106 KB)",
+      "without": 25000,
+      "withPlugin": 292,
+      "action": "denied",
+      "note": "Claude Code returns the first 25k tokens; follow-up: Grep one entry (-A 3)",
+      "ms": 77.7175
+    },
+    {
+      "id": "minified",
+      "title": "Read vendor.min.js (140 KB, one line)",
+      "without": 25000,
+      "withPlugin": 133,
+      "action": "denied",
+      "note": "Claude Code returns the first 25k tokens; follow-up: Grep count for an identifier",
+      "ms": 76.037
+    },
+    {
+      "id": "sourcemap",
+      "title": "Read app.js.map (200 KB)",
+      "without": 25000,
+      "withPlugin": 69,
+      "action": "denied",
+      "note": "Claude Code returns the first 25k tokens; Claude reads the real source instead, which it needed anyway",
+      "ms": 66.2143
+    },
+    {
+      "id": "dist",
+      "title": "Read dist/assets/index.js (80 KB build output)",
+      "without": 24564,
+      "withPlugin": 1235,
+      "action": "denied",
+      "note": "follow-up: 100-line Read of a source file",
+      "ms": 80.4005
+    },
+    {
+      "id": "large",
+      "title": "Read src/api/generated.ts (120 KB)",
+      "without": 25000,
+      "withPlugin": 337,
+      "action": "denied",
+      "note": "Claude Code returns the first 25k tokens; follow-up: Grep one function (-A 5)",
+      "ms": 61.1549
+    },
+    {
+      "id": "repeat-read",
+      "title": "Re-read unchanged src/routes.ts (19 KB)",
+      "without": 5853,
+      "withPlugin": 72,
+      "action": "denied once",
+      "note": "since Claude Code v2.1.317 a repeat read costs the full file again",
+      "ms": 146.817
+    },
+    {
+      "id": "cat-lock",
+      "title": "Bash: cat web/yarn.lock",
+      "without": 769,
+      "withPlugin": 292,
+      "action": "denied",
+      "note": "Claude Code saves it to a file, 2k preview; follow-up on both sides: grep one entry (-A 3)",
+      "ms": 145.6084
+    },
+    {
+      "id": "npm-install",
+      "title": "npm install (success, deprecation warnings)",
+      "without": 3644,
+      "withPlugin": 737,
+      "action": "condensed",
+      "note": "",
+      "ms": 70.0982
+    },
+    {
+      "id": "pytest",
+      "title": "pytest -v (success, 150 tests)",
+      "without": 3863,
+      "withPlugin": 802,
+      "action": "condensed",
+      "note": "",
+      "ms": 81.6756
+    },
+    {
+      "id": "pytest-big",
+      "title": "pytest -v (success, 320 tests)",
+      "without": 550,
+      "withPlugin": 550,
+      "action": "untouched",
+      "note": "Claude Code saves it to a file, 2k preview",
+      "ms": 61.7717
+    },
+    {
+      "id": "next-build",
+      "title": "next build (success, 90 routes)",
+      "without": 1646,
+      "withPlugin": 524,
+      "action": "condensed",
+      "note": "",
+      "ms": 72.9442
+    },
+    {
+      "id": "jest-post",
+      "title": "jest, 2 failures (exit 1), strategy \"post\"",
+      "without": 2500,
+      "withPlugin": 2500,
+      "action": "untouched",
+      "note": "Claude Code keeps a 10k-char excerpt; PostToolUseFailure cannot replace output",
+      "ms": 0
+    },
+    {
+      "id": "jest-rewrite",
+      "title": "jest, 2 failures (exit 1), strategy \"rewrite\"",
+      "without": 2500,
+      "withPlugin": 589,
+      "action": "rewritten (exit 1 kept)",
+      "note": "Claude Code keeps a 10k-char excerpt",
+      "ms": 61.1315
+    },
+    {
+      "id": "control-read",
+      "title": "Control: first Read of src/routes.ts",
+      "without": 5853,
+      "withPlugin": 5853,
+      "action": "allowed",
+      "note": "",
+      "ms": 59.1417
+    },
+    {
+      "id": "control-git",
+      "title": "Control: git status (short output)",
+      "without": 14,
+      "withPlugin": 14,
+      "action": "untouched",
+      "note": "",
+      "ms": 56.9499
+    }
+  ],
+  "latency": 63
+}

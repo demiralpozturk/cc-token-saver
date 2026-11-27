@@ -26,3 +26,14 @@ jobs:
         run: node scripts/check-manifests.js
       - name: Run tests
         run: npm test
+
+  benchmark:
+    name: benchmark (check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run benchmark
+        run: node benchmark/run.js --check

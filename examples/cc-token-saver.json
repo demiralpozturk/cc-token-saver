@@ -1,0 +1,20 @@
+{
+  "readGuard": {
+    "maxFileKB": 96,
+    "allow": ["fixtures/**", "docs/api/*.md"],
+    "block": ["**/*.snap", "src/generated/**"],
+    "buildDirs": ["node_modules", "dist", "build", ".next", "coverage", "storybook-static"]
+  },
+  "repeatReads": {
+    "enabled": true
+  },
+  "noisyCommands": {
+    "strategy": "auto",
+    "tailLines": 30,
+    "extraPatterns": ["^\\./scripts/bootstrap\\.sh"]
+  },
+  "statusline": {
+    "showTokens": true,
+    "showSaved": true
+  }
+}
