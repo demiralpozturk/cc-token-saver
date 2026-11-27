@@ -1,0 +1,13 @@
+{
+  "session_id": "{{SESSION}}",
+  "transcript_path": "{{PROJECT}}/transcript.jsonl",
+  "cwd": "{{PROJECT}}",
+  "permission_mode": "{{MODE}}",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "{{COMMAND}}",
+    "description": "Run a command"
+  },
+  "tool_use_id": "toolu_01BASH"
+}

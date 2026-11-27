@@ -1,0 +1,14 @@
+{
+  "session_id": "{{SESSION}}",
+  "transcript_path": "{{PROJECT}}/transcript.jsonl",
+  "cwd": "{{PROJECT}}",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "agent_id": "a4d2c8f1e0b3a297",
+  "agent_type": "Explore",
+  "tool_name": "Read",
+  "tool_input": {
+    "file_path": "{{FILE}}"
+  },
+  "tool_use_id": "toolu_01READSUB"
+}
