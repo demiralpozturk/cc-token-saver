@@ -90,6 +90,23 @@ test('denies binary content detected by NUL bytes', () => {
   expectDeny(runHook('pre-tool-use', readInput(files.binary), isolatedEnv()), /binary/);
 });
 
+test('above 256 KB the Read is left to Claude Code, which refuses it with a shorter message', () => {
+  const p = makeProject().root;
+  const { lockfile } = require('./_project');
+  const big = writeFile(path.join(p, 'big', 'package-lock.json'), lockfile(1400));
+  const mk = (extraCfg) => {
+    if (extraCfg) writeFile(path.join(p, '.claude', 'cc-token-saver.json'), JSON.stringify(extraCfg));
+    return loadFixture('pre-read.json', { SESSION: 'd', PROJECT: p, FILE: big });
+  };
+  assert.ok(require('fs').statSync(big).size > 256 * 1024);
+  expectAllow(runHook('pre-tool-use', mk(), isolatedEnv()));
+  expectDeny(runHook('pre-tool-use', mk({ readGuard: { deferAboveKB: 0 } }), isolatedEnv()), /lockfile/);
+  // cat of the same file is still worth blocking: Bash would show a 2k-char preview plus a path.
+  const cat = loadFixture('pre-bash.json', { SESSION: 'd', PROJECT: p, COMMAND: 'cat big/package-lock.json', MODE: 'default' });
+  writeFile(path.join(p, '.claude', 'cc-token-saver.json'), '{}');
+  expectDeny(runHook('pre-tool-use', cat, isolatedEnv()), /lockfile/);
+});
+
 test('never blocks images (Claude can look at them)', () => {
   expectAllow(runHook('pre-tool-use', readInput(files.image), isolatedEnv()));
 });
