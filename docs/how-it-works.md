@@ -106,3 +106,91 @@ and ANSI colors, and on Windows runs through Git Bash when installed (use forwar
 - Knowing whether earlier content is still in Claude's context after a rewind (Esc Esc). This is why the
   repeated-read guard blocks only once (see below).
 - Installing a status line from a plugin.
+
+## 2. How each feature uses those capabilities
+
+### Read guard (PreToolUse: Read, Grep, Glob, Bash, PowerShell)
+
+`lib/classify.js` decides whether a whole-file Read is wasteful, in this order: images, PDFs and notebooks
+pass; `readGuard.allow` globs pass; files under `minBlockBytes` (2 KB) pass; then lockfile name, source
+map name, `.min.*` name, binary extension, `readGuard.block` globs, a large file inside a build or
+dependency directory, NUL bytes in the first 64 KB (binary), an average line length of 1,000+
+characters (minified or generated), and finally size over `maxFileKB`.
+
+A Read is never blocked when it has a `limit` (up to `maxRangeLines`) or `allow_large: true`. Files over
+256 KB are left to Claude Code, which refuses them with a shorter message than ours (the benchmark showed
+our denial would cost more than it saves there).
+
+The denial is a `permissionDecision: "deny"` with a `permissionDecisionReason` that names the file, its
+size and estimated token cost, and what to do instead. Build directories are only checked inside the
+project, so a project that itself lives under `~/build/` is not flagged; outside the project only
+`node_modules` counts.
+
+The same file check runs for `cat`, `less`, `more`, `bat`, `nl`, `type` and `Get-Content` in Bash and
+PowerShell commands, following `cd` within the command. Piped or redirected commands, `head`/`tail`,
+`Get-Content -TotalCount` and commands marked `# ccts:raw` are left alone.
+
+### Repeated reads (PostToolUse: Read, Edit, Write, MultiEdit, NotebookEdit; PreToolUse: Read)
+
+PostToolUse(Read) appends `{path, offset, limit, agent, mtime, size, tokens}` to the session log.
+PreToolUse(Read) denies an identical Read (same agent, path, offset and limit) when the file's mtime and
+size are unchanged and the earlier result was worth at least 200 tokens. It denies **once**: a
+`repeat-denied` event is logged, and the next identical attempt is allowed. This matters because a hook
+cannot see whether the earlier result is still in Claude's context (for example after Esc Esc rewind).
+Edits invalidate the path; SessionStart with `source: "compact"` or `"clear"` resets everything.
+
+### Noisy command output
+
+Commands are matched per segment (`&&`, `;`, `||`, newlines) after stripping `FOO=bar`, `sudo`, `time`
+and similar prefixes. Known noisy commands: package installs (npm, pnpm, yarn, bun, pip, uv, poetry,
+pipenv, conda, bundle, composer, apt, brew), builds (cargo, go, gradle, maven, dotnet, make, docker build,
+next/vite/webpack/turbo/nx builds) and test runners (npm test, jest, vitest, mocha, pytest, phpunit,
+rspec, playwright, cypress). Commands Claude already piped or redirected are skipped.
+
+`lib/condense.js` strips ANSI codes, resolves carriage-return progress bars, collapses repeated lines,
+then keeps the first 5 lines, every error-like line with 2 lines of context (up to 40), up to 10
+distinct warnings, and the last 30 lines. The header states what was kept and where the full log is.
+
+- **post** (default): PostToolUse `updatedToolOutput` with the original `tool_response` object and only
+  `stdout`/`stderr` replaced, so the shape always matches. Only output between 3,000 and 30,000
+  characters is touched; above that Claude Code already saves it to a file with a preview.
+- **rewrite**: PreToolUse `updatedInput` with the command wrapped as
+  `{ cmd\n} > log 2>&1; __ccts_ec=$?; node condense-log.js log $__ccts_ec session; (exit $__ccts_ec)`.
+  No pipeline means no `pipefail` and an exact exit status; `{ }` instead of `( )` means `cd` carries
+  over. The trailing newline before `}` keeps heredocs and trailing comments working. Not applied to
+  background commands, commands with `exit`/`exec`/`set -e`, the PowerShell tool, or bypassed commands.
+  `condense-log.js` prints the condensed text only when it is smaller than what Claude Code would show
+  anyway (full output if successful and under 30k, a 2k preview above that, a 10k excerpt for failures).
+- **auto**: rewrite only when `permission_mode` is `bypassPermissions`, because in other modes Claude
+  Code checks permission rules against the rewritten command, which would cause extra prompts.
+
+### Status line and token report
+
+The status line reads `model`, `context_window.used_percentage` and `cost.total_cost_usd` straight
+from its JSON input. Session tokens come from the transcript JSONL at `transcript_path` plus
+`<session>/subagents/*.jsonl`: each assistant line has `message.id` and `message.usage`, and one API
+response is written as several lines with the same id, so each id is counted once. Files are read
+incrementally (byte offset cache under the state directory), so long sessions stay fast.
+
+The token report parses the same files fully: usage totals, `tool_use` blocks (name and input) matched
+to `tool_result` blocks by id, result size per tool, and for each result how many later API requests in
+the same transcript re-sent it before a `compact_boundary` system line.
+
+## 3. Token accounting
+
+- **Exact:** API usage in the status line and the report (from the transcript).
+- **Claude Code's estimate:** the cost (`cost.total_cost_usd`).
+- **Our estimate (characters / 4):** tool result sizes, and "saved". For a denial, saved = what Claude
+  Code would have returned (whole file with line-number prefixes, capped at 25,000 tokens) minus the
+  denial reason. For condensed output, saved = original output minus condensed output. These are
+  *gross* numbers: the follow-up call Claude makes after a denial is not subtracted in the status line
+  (the benchmark does subtract a stated follow-up).
+
+## 4. Known limitations
+
+- Hooks start one `node` process per call (~60 ms median on the benchmark machine).
+- The repeated-read guard cannot know about context lost to a rewind; deny-once is the compromise.
+- In the default strategy, failing commands are not condensed (PostToolUseFailure cannot replace output).
+- On macOS/Linux, Claude Code searches with `find`/`grep` through Bash instead of the Glob/Grep tools, so
+  the Glob and Grep guards mostly matter on Windows.
+- Token estimates use 4 characters per token; dense content (hashes, minified code) tokenizes worse.
